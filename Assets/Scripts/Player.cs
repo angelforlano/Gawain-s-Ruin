@@ -9,7 +9,7 @@ public sealed class Player : MonoBehaviour
     [Range(0.05f, 0.5f)] float turnSmoohtTime = 0.1f;
     [Range(1, 4)] public int walkSpeed = 3;
     [Range(4, 6)] public int runSpeed = 5;
-    [Range(4, 6)] public float jumpSpeed = 4;
+    [Range(4, 6)] public float jumpForce = 4;
     [Range(6, 10)] public float gravity = 8;
 
     [Header("Physics Settings")]
@@ -20,6 +20,7 @@ public sealed class Player : MonoBehaviour
     float turnSmoohtVelocity;
     Transform mainCamera;
     Animator animator;
+    Rigidbody rb;
     Vector3 inputsVector;
     Vector3 moveDirection;
     
@@ -38,15 +39,21 @@ public sealed class Player : MonoBehaviour
         get { return moveDirection.magnitude > 0 && currentSpeed == runSpeed; }
     }
 
+    public bool IsGrounded
+    {
+        get {return groundRaycaster.Check();}
+    }
+
     public bool IsFalling
     {
-        get {return !groundRaycaster.Check();}
+        get {return !IsGrounded;}
     }
-    
+
     void Start()
     {
         mainCamera = Camera.main.transform;
         animator = gameObject.GetComponent<Animator>();
+        rb = gameObject.GetComponent<Rigidbody>();
     }
 
     void Update()
@@ -101,11 +108,14 @@ public sealed class Player : MonoBehaviour
 
     void Jump()
     {
+        if(IsFalling) return;
+        
         if (wallInFrontRaycaster.Check())
         {
             animator.SetTrigger("jumpToBraced");
         } else {
             animator.SetTrigger("jump");
+            rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
         }
     }
 }

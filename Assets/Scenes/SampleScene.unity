@@ -1205,7 +1205,7 @@ MonoBehaviour:
   targetMask:
     serializedVersion: 2
     m_Bits: 512
-  targetTag: Ground
+  targetTag: 
 --- !u!1 &1951930978
 GameObject:
   m_ObjectHideFlags: 3
@@ -2195,7 +2195,7 @@ MonoBehaviour:
   hp: 100
   walkSpeed: 2
   runSpeed: 5
-  jumpSpeed: 4
+  jumpForce: 5
   gravity: 8
   groundRaycaster: {fileID: 1851745014}
   wallInFrontRaycaster: {fileID: 729389911}
