@@ -214,6 +214,106 @@ Transform:
   m_Father: {fileID: 2003060864}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &203713435
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 203713437}
+  - component: {fileID: 203713436}
+  m_Layer: 0
+  m_Name: Wall Right Raycaster
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &203713436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 203713435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e681150766f6e540b02f524c677dcbe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  debug: 1
+  rayDirection: 0
+  rayLength: 0.5
+  targetMask:
+    serializedVersion: 2
+    m_Bits: 512
+  targetTag: Wall
+--- !u!4 &203713437
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 203713435}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.6, y: -0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4549850608356197298}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &516572299
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 516572301}
+  - component: {fileID: 516572300}
+  m_Layer: 0
+  m_Name: Wall Left Raycaster
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &516572300
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 516572299}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e681150766f6e540b02f524c677dcbe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  debug: 1
+  rayDirection: 0
+  rayLength: 0.5
+  targetMask:
+    serializedVersion: 2
+    m_Bits: 512
+  targetTag: Wall
+--- !u!4 &516572301
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 516572299}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.6, y: -0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4549850608356197298}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &620667467
 GameObject:
   m_ObjectHideFlags: 3
@@ -1279,7 +1379,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1951930978}
-  m_LocalRotation: {x: 0.09724447, y: 0.9431096, z: 0.28303915, w: 0.14483358}
+  m_LocalRotation: {x: 0.09724445, y: 0.9431096, z: 0.28303915, w: 0.14483355}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -2156,7 +2256,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: 648d58c57cf7d3846aafe88cd7550863, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
-  m_ApplyRootMotion: 0
+  m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
@@ -2177,6 +2277,8 @@ Transform:
   - {fileID: 4549850609196916269}
   - {fileID: 1851745013}
   - {fileID: 729389910}
+  - {fileID: 516572301}
+  - {fileID: 203713437}
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2199,6 +2301,8 @@ MonoBehaviour:
   gravity: 8
   groundRaycaster: {fileID: 1851745014}
   wallInFrontRaycaster: {fileID: 729389911}
+  wallRightRaycaster: {fileID: 203713436}
+  wallLeftRaycaster: {fileID: 516572300}
 --- !u!1 &4549850608356197303
 GameObject:
   m_ObjectHideFlags: 0

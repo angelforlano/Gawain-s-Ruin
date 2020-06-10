@@ -15,12 +15,18 @@ public sealed class Player : MonoBehaviour
     [Header("Physics Settings")]
     public Raycaster groundRaycaster;
     public Raycaster wallInFrontRaycaster;
+    public Raycaster wallRightRaycaster;
+    public Raycaster wallLeftRaycaster;
 
     int currentSpeed;
     float turnSmoohtVelocity;
     Transform mainCamera;
     Animator animator;
     Rigidbody rb;
+
+    bool climbing;
+    float horizontalMovement;
+    float verticalMovement;
     Vector3 inputsVector;
     Vector3 moveDirection;
     
@@ -58,8 +64,23 @@ public sealed class Player : MonoBehaviour
 
     void Update()
     {
-        Move();
+        UpdateInputs();
+        UpdateMovement();
+        UpdateClimbMovement();
         UpdateAnimator();
+    }
+
+    void UpdateInputs()
+    {
+        horizontalMovement = Input.GetAxis("Horizontal");
+        verticalMovement = Input.GetAxis("Vertical");
+
+        inputsVector = new Vector3(horizontalMovement, 0, verticalMovement).normalized;
+        
+        if (Input.GetButtonDown("Jump"))
+        {
+            Jump();
+        }
     }
 
     void UpdateAnimator()
@@ -69,18 +90,10 @@ public sealed class Player : MonoBehaviour
         animator.SetBool("isFalling", IsFalling);
     }
 
-    void Move()
+    void UpdateMovement()
     {
-        if (!IsAlive)
-            return;
-
-        inputsVector = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical")).normalized;
-        
-        if (Input.GetButtonDown("Jump"))
-        {
-            Jump();
-        }
-            
+        if (!IsAlive || climbing) return;
+    
         if (inputsVector.magnitude >= 0.1)
         {
             float targetAngle = Mathf.Atan2(inputsVector.x, inputsVector.z) * Mathf.Rad2Deg + mainCamera.eulerAngles.y;
@@ -106,6 +119,19 @@ public sealed class Player : MonoBehaviour
         }     
     }
 
+    void UpdateClimbMovement()
+    {
+        if(!climbing) return;
+
+        if((wallLeftRaycaster.Check() && horizontalMovement < 0) || (wallRightRaycaster.Check() && horizontalMovement > 0))
+        {
+            animator.SetFloat("hMovement", horizontalMovement);
+            transform.Translate(new Vector3(horizontalMovement, 0, 0) * (walkSpeed/2) * Time.deltaTime, Space.World);
+        } else {
+            animator.SetFloat("hMovement", 0);
+        }   
+    }
+
     void Jump()
     {
         if(IsFalling) return;
@@ -113,6 +139,7 @@ public sealed class Player : MonoBehaviour
         if (wallInFrontRaycaster.Check())
         {
             animator.SetTrigger("jumpToBraced");
+            climbing = true;
         } else {
             animator.SetTrigger("jump");
             rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
