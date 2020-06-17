@@ -10,13 +10,23 @@ public sealed class Player : MonoBehaviour
     [Range(1, 4)] public int walkSpeed = 3;
     [Range(4, 6)] public int runSpeed = 5;
     [Range(4, 6)] public float jumpForce = 4;
-    [Range(6, 10)] public float gravity = 8;
+    
+    [Header("Foots Ik Settings")]
+    public float pelvisOffset = 1;
+    [Range(0f, 2f)] public float raycastDonwDistance = 1.5f;
+    public float heigtFromGroundRaycast = 1;
+    public float feetToIkPositionSpeed = 2;
+    public float pelvisUpAndDonwSpeed = 2;
 
     [Header("Physics Settings")]
+    public LayerMask environmentLayerMask;
     public Raycaster groundRaycaster;
     public Raycaster wallInFrontRaycaster;
     public Raycaster wallRightRaycaster;
     public Raycaster wallLeftRaycaster;
+
+    [Header("Other Settings")]
+    public Transform playerMesh;
 
     int currentSpeed;
     float turnSmoohtVelocity;
@@ -29,6 +39,16 @@ public sealed class Player : MonoBehaviour
     float verticalMovement;
     Vector3 inputsVector;
     Vector3 moveDirection;
+
+    float lastPelvisPositionY;
+    float lastRightFootPositionY;
+    float lastlLeftFootPositionY;
+    Vector3 rightFootPosition;
+    Vector3 leftFootPosition;
+    Vector3 rightFootIKPosition;
+    Vector3 leftFootIKPosition;
+    Quaternion rightFootIKRotation;
+    Quaternion leftFootIKRotation;
     
     public bool IsAlive
     {
@@ -68,6 +88,15 @@ public sealed class Player : MonoBehaviour
         UpdateMovement();
         UpdateClimbMovement();
         UpdateAnimator();
+    }
+
+    void FixedUpdate()
+    {
+        AdjustFeetTarget(ref rightFootPosition, HumanBodyBones.RightFoot);
+        AdjustFeetTarget(ref leftFootPosition, HumanBodyBones.LeftFoot);
+
+        FeetPositionSolver(rightFootPosition, ref rightFootIKPosition, ref rightFootIKRotation);
+        FeetPositionSolver(leftFootPosition, ref leftFootIKPosition, ref leftFootIKRotation);
     }
 
     void UpdateInputs()
@@ -138,6 +167,8 @@ public sealed class Player : MonoBehaviour
         
         if (wallInFrontRaycaster.Check())
         {
+            playerMesh.localPosition = new Vector3(0, 0, -0.15f);
+            playerMesh.rotation = Quaternion.Euler(10, 0, 0);
             animator.SetTrigger("jumpToBraced");
             climbing = true;
         } else {
@@ -145,4 +176,87 @@ public sealed class Player : MonoBehaviour
             rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
         }
     }
+
+    #region FootIKSystem
+    void MovePelvisHeigt()
+    {
+        if (rightFootIKPosition == Vector3.zero || leftFootIKPosition == Vector3.zero || lastPelvisPositionY == 0)
+        {
+            lastPelvisPositionY = animator.bodyPosition.y;
+            return;
+        }
+
+        float lOffsetPosition = leftFootIKPosition.y - transform.position.y;
+        float rOffsetPosition = rightFootIKPosition.y - transform.position.y;
+
+        float totalOffset = (lOffsetPosition < rOffsetPosition) ? lOffsetPosition : rOffsetPosition;
+
+        Vector3 newPelvisPosition = animator.bodyPosition + Vector3.up * totalOffset;
+
+        newPelvisPosition.y = Mathf.Lerp(lastPelvisPositionY, newPelvisPosition.y, pelvisUpAndDonwSpeed);
+
+        animator.bodyPosition = newPelvisPosition;
+
+        lastPelvisPositionY = animator.bodyPosition.y;
+    }
+
+    void MoveFeetToIkPoint(AvatarIKGoal foot, Vector3 positionIkHolder, Quaternion rotationIkHolder, ref float lastFootPositionY)
+    {
+        Vector3 targetIkPosition = animator.GetIKPosition(foot);
+
+        if(positionIkHolder != Vector3.zero)
+        {
+            targetIkPosition = transform.InverseTransformPoint(targetIkPosition);
+            positionIkHolder = transform.InverseTransformPoint(positionIkHolder);
+
+            float yVariable = Mathf.Lerp(lastFootPositionY, positionIkHolder.y, feetToIkPositionSpeed);
+            targetIkPosition.y += yVariable;
+
+            lastFootPositionY = yVariable;
+
+            targetIkPosition = transform.TransformPoint(targetIkPosition);
+
+            animator.SetIKRotation(foot, rotationIkHolder);
+        }
+
+        animator.SetIKPosition(foot, targetIkPosition);
+    }
+
+    void FeetPositionSolver(Vector3 fromSkyPosition, ref Vector3 feetIkPositions, ref Quaternion feetIkRotations)
+    {
+        RaycastHit feetOutHit;
+
+        // We cast our ray from above the foot in case the current terrain/floor is above the foot position.
+        if (Physics.Raycast(fromSkyPosition, Vector3.down, out feetOutHit, raycastDonwDistance + heigtFromGroundRaycast, environmentLayerMask))
+        {
+            feetIkPositions = fromSkyPosition;
+            feetIkPositions.y = feetOutHit.point.y + pelvisOffset;
+            feetIkRotations = Quaternion.FromToRotation(Vector3.up, feetOutHit.normal) * transform.rotation;
+
+            return;
+        }
+
+        feetIkPositions = Vector3.zero;
+    }
+
+    void AdjustFeetTarget(ref Vector3 feetPositions, HumanBodyBones foot)
+    {
+        feetPositions = animator.GetBoneTransform(foot).position;
+        feetPositions.y = transform.position.y + heigtFromGroundRaycast;
+    }
+
+    void OnAnimatorIK(int layerIndex)
+    {
+        MovePelvisHeigt();
+
+        // Set the weights of left and right feet to the current value defined by the curve in our animatorations.
+        animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, animator.GetFloat("IKLeftFootWeight"));
+        animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, animator.GetFloat("IKLeftFootWeight"));
+        animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, animator.GetFloat("IKRightFootWeight") );
+        animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, animator.GetFloat("IKRightFootWeight") );
+
+        MoveFeetToIkPoint(AvatarIKGoal.RightFoot, rightFootIKPosition, rightFootIKRotation, ref lastRightFootPositionY);
+        MoveFeetToIkPoint(AvatarIKGoal.LeftFoot, leftFootIKPosition, leftFootIKRotation, ref lastlLeftFootPositionY);
+    }
+    #endregion
 }
