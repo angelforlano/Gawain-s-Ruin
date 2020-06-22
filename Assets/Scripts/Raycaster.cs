@@ -46,6 +46,18 @@ public sealed class Raycaster : MonoBehaviour
         return false;
     }
 
+    public Vector3 GetHitNormal()
+    {
+        RaycastHit hit;
+
+        if (Physics.Raycast(transform.position, RayDirection, out hit, rayLength, targetMask.value))
+        {
+            return hit.normal;
+        }
+
+        return hit.normal;
+    }
+
     void OnDrawGizmos()
     {
         if (!debug) return;

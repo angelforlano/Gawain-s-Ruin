@@ -27,7 +27,7 @@ public sealed class Player : MonoBehaviour
 
     [Header("Other Settings")]
     public Transform playerMesh;
-
+    
     int currentSpeed;
     float turnSmoohtVelocity;
     Transform mainCamera;
@@ -75,10 +75,17 @@ public sealed class Player : MonoBehaviour
         get {return !IsGrounded;}
     }
 
+    void AlignToTarget(Transform target)
+    {
+        Vector3 direction = target.position - transform.position ;
+        Quaternion rotation = Quaternion.FromToRotation(transform.forward, direction);
+        transform.rotation = rotation * transform.rotation;        
+    }
+
     void Start()
     {
         mainCamera = Camera.main.transform;
-        animator = gameObject.GetComponent<Animator>();
+        animator = gameObject.GetComponentInChildren<Animator>();
         rb = gameObject.GetComponent<Rigidbody>();
     }
 
@@ -155,7 +162,7 @@ public sealed class Player : MonoBehaviour
         if((wallLeftRaycaster.Check() && horizontalMovement < 0) || (wallRightRaycaster.Check() && horizontalMovement > 0))
         {
             animator.SetFloat("hMovement", horizontalMovement);
-            transform.Translate(new Vector3(horizontalMovement, 0, 0) * (walkSpeed/2) * Time.deltaTime, Space.World);
+            transform.Translate(new Vector3(horizontalMovement, 0, 0) * (walkSpeed/2) * Time.deltaTime);
         } else {
             animator.SetFloat("hMovement", 0);
         }   
@@ -167,14 +174,32 @@ public sealed class Player : MonoBehaviour
         
         if (wallInFrontRaycaster.Check())
         {
-            playerMesh.localPosition = new Vector3(0, 0, -0.15f);
-            playerMesh.rotation = Quaternion.Euler(10, 0, 0);
-            animator.SetTrigger("jumpToBraced");
-            climbing = true;
+            StartClimbing();
         } else {
             animator.SetTrigger("jump");
             rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
         }
+    }
+
+    public void StartClimbing()
+    {
+        if (!climbing)
+        {
+            climbing = true;
+            animator.SetTrigger("jumpToBraced");
+            
+            transform.rotation = Quaternion.FromToRotation(Vector3.forward, (wallInFrontRaycaster.GetHitNormal()* -1));
+            
+            playerMesh.localPosition = new Vector3(0, 0, -0.4f);
+            playerMesh.localRotation = Quaternion.Euler(10, 0, 0);
+        } else {
+           animator.SetTrigger("climbing");
+        }
+    }
+
+    public void StopClimbing()
+    {
+        climbing = false;
     }
 
     #region FootIKSystem
