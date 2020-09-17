@@ -52,7 +52,7 @@ public sealed class Player : MonoBehaviour
     
     public bool IsAlive
     {
-        get {return hp > 0;}
+        get { return hp > 0; }
     }
 
     public bool IsWalking
@@ -67,12 +67,12 @@ public sealed class Player : MonoBehaviour
 
     public bool IsGrounded
     {
-        get {return groundRaycaster.Check();}
+        get { return groundRaycaster.Check(); }
     }
 
     public bool IsFalling
     {
-        get {return !IsGrounded;}
+        get { return !IsGrounded; }
     }
 
     void AlignToTarget(Transform target)
@@ -85,7 +85,7 @@ public sealed class Player : MonoBehaviour
     void Start()
     {
         mainCamera = Camera.main.transform;
-        animator = gameObject.GetComponentInChildren<Animator>();
+        animator = gameObject.GetComponent<Animator>();
         rb = gameObject.GetComponent<Rigidbody>();
     }
 
@@ -188,12 +188,12 @@ public sealed class Player : MonoBehaviour
             climbing = true;
             animator.SetTrigger("jumpToBraced");
             
-            transform.rotation = Quaternion.FromToRotation(Vector3.forward, (wallInFrontRaycaster.GetHitNormal()* -1));
+            transform.rotation = Quaternion.FromToRotation(Vector3.forward, (wallInFrontRaycaster.GetHitNormal() * -1));
             
             playerMesh.localPosition = new Vector3(0, 0, -0.4f);
             playerMesh.localRotation = Quaternion.Euler(10, 0, 0);
         } else {
-           animator.SetTrigger("climbing");
+            animator.SetTrigger("climbing");
         }
     }
 
@@ -274,11 +274,9 @@ public sealed class Player : MonoBehaviour
     {
         MovePelvisHeigt();
 
-        // Set the weights of left and right feet to the current value defined by the curve in our animatorations.
+        // Set the weights of left and right feet
         animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, animator.GetFloat("IKLeftFootWeight"));
-        animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, animator.GetFloat("IKLeftFootWeight"));
-        animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, animator.GetFloat("IKRightFootWeight") );
-        animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, animator.GetFloat("IKRightFootWeight") );
+        animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, animator.GetFloat("IKRightFootWeight"));
 
         MoveFeetToIkPoint(AvatarIKGoal.RightFoot, rightFootIKPosition, rightFootIKRotation, ref lastRightFootPositionY);
         MoveFeetToIkPoint(AvatarIKGoal.LeftFoot, leftFootIKPosition, leftFootIKRotation, ref lastlLeftFootPositionY);
